@@ -21,9 +21,9 @@ logging.basicConfig(
 
 Accuracy: 1.00
 
-Data shape: (50, 30)
-Number of classes: 3
-Class distribution: [13 21 16]
+# Data shape: (50, 30)
+# Number of classes: 3
+# Class distribution: [13 21 16]
 
 """
 Time Series Clustering with AEON

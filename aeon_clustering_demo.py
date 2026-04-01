@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from aeon.datasets import make_example_3_class_dataset
 from aeon.classification.distance_based import KNeighborsTimeSeriesClassifier
-from sklearn.model_selection import train_test_split, shuffle=False
+# from sklearn.model_selection import train_test_split, shuffle=False
 from sklearn.metrics import accuracy_score
 import logging
 

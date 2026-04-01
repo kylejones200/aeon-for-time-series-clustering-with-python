@@ -43,7 +43,7 @@ def evaluate_classifier(clf: KNeighborsTimeSeriesClassifier, X_test: np.ndarray,
     }
 
 def plot_sample_series(X: np.ndarray, labels: list, output_path: Path):
- """Plot sample series from each class """
+    """Plot sample series from each class """
     plot_series(X[0], X[1], X[2], labels=labels)
     plt.title("Sample Series from Each Class", pad=10)
     plt.savefig(output_path, dpi=100, bbox_inches="tight")
