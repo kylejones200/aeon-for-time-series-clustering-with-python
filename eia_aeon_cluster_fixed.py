@@ -9,6 +9,12 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from dataclasses import dataclass
 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 # AEON imports for time series clustering
 from aeon.clustering import TimeSeriesKMeans
 from aeon.distances import dtw_distance
@@ -103,21 +109,21 @@ def main():
     try:
         s = load_series(cfg)
     except FileNotFoundError:
-        print(f"NOTE: {cfg.csv_path} not found, cannot run AEON clustering")
+        logger.info(f"NOTE: {cfg.csv_path} not found, cannot run AEON clustering")
         return
 
-    print(f"\nTime Series Clustering with AEON")
-    print(f"{'='*60}")
-    print(f"Total observations: {len(s)}")
-    print(f"Date range: {s.index.min().date()} to {s.index.max().date()}")
+    logger.info(f"\nTime Series Clustering with AEON")
+    logger.info(f"{'='*60}")
+    logger.info(f"Total observations: {len(s)}")
+    logger.info(f"Date range: {s.index.min().date()} to {s.index.max().date()}")
 
     # Prepare annual sequences
     X, years = prepare_annual_sequences(s)
-    print(f"Complete years: {len(years)}")
-    print(f"Shape for clustering: {X.shape} (samples, channels, timepoints)")
+    logger.info(f"Complete years: {len(years)}")
+    logger.info(f"Shape for clustering: {X.shape} (samples, channels, timepoints)")
 
     # AEON TimeSeriesKMeans with DTW distance
-    print(f"\nRunning TimeSeriesKMeans (distance={cfg.distance})...")
+    logger.info(f"\nRunning TimeSeriesKMeans (distance={cfg.distance})...")
     clusterer = TimeSeriesKMeans(
         n_clusters=cfg.n_clusters,
         distance=cfg.distance,
@@ -130,14 +136,14 @@ def main():
 
     # Cluster statistics
     unique_labels, counts = np.unique(labels, return_counts=True)
-    print(f"\nCluster Distribution:")
+    logger.info(f"\nCluster Distribution:")
     for label, count in zip(unique_labels, counts):
         cluster_years = [years[i] for i in range(len(years)) if labels[i] == label]
-        print(f"  Cluster {label}: {count} years ({count/len(years)*100:.1f}%)")
-        print(f"    Years: {cluster_years}")
+        logger.info(f"  Cluster {label}: {count} years ({count/len(years)*100:.1f}%)")
+        logger.info(f"    Years: {cluster_years}")
 
     # Compute DTW distance matrix for visualization
-    print(f"\nComputing DTW distance matrix...")
+    logger.info(f"\nComputing DTW distance matrix...")
     dtw_matrix = compute_dtw_matrix(X)
 
     # Create visualizations
@@ -266,12 +272,12 @@ def main():
 
     save_fig("eia_aeon_ts_clusters.png")
 
-    print(f"\nClustering Quality:")
-    print(f"  Inertia:         {clusterer.inertia_:.1f}")
-    print(f"  Silhouette:      {sil_score:.3f}")
-    print(f"  Iterations:      {clusterer.n_iter_}")
+    logger.info(f"\nClustering Quality:")
+    logger.info(f"  Inertia:         {clusterer.inertia_:.1f}")
+    logger.info(f"  Silhouette:      {sil_score:.3f}")
+    logger.info(f"  Iterations:      {clusterer.n_iter_}")
 
-    print(f"\nOutput: eia_aeon_ts_clusters.png\n")
+    logger.info(f"\nOutput: eia_aeon_ts_clusters.png\n")
 
 
 if __name__ == "__main__":
