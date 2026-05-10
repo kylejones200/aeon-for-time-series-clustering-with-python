@@ -99,7 +99,7 @@ def compute_dtw_matrix(sequences: np.ndarray) -> np.ndarray:
     
     return dist_matrix
 
-def main():
+def main(plot: bool = False):
     cfg = Config()
     
     try:
@@ -143,102 +143,103 @@ def main():
     dtw_matrix = compute_dtw_matrix(X)
     
     # Create visualizations
-    fig = plt.figure(figsize=(16, 10))
+    if plot:
+        fig = plt.figure(figsize=(16, 10))
     
     # 1. Cluster assignments over time
-    ax1 = plt.subplot(2, 3, 1)
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
-    for i, year in enumerate(years):
-        ax1.scatter(year, labels[i], c=colors[labels[i]], s=100, alpha=0.7)
-    ax1.set_xlabel('Year')
-    ax1.set_ylabel('Cluster')
-    ax1.set_title('Cluster Assignments Over Time')
-    ax1.set_yticks(range(cfg.n_clusters))
+        ax1 = plt.subplot(2, 3, 1)
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+        for i, year in enumerate(years):
+            ax1.scatter(year, labels[i], c=colors[labels[i]], s=100, alpha=0.7)
+        ax1.set_xlabel('Year')
+        ax1.set_ylabel('Cluster')
+        ax1.set_title('Cluster Assignments Over Time')
+        ax1.set_yticks(range(cfg.n_clusters))
     
     # 2. Cluster centroids (seasonal patterns)
-    ax2 = plt.subplot(2, 3, 2)
-    months = range(1, 13)
-    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        ax2 = plt.subplot(2, 3, 2)
+        months = range(1, 13)
+        month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     
-    for k in range(cfg.n_clusters):
-        centroid = clusterer.cluster_centers_[k, 0, :]  # Shape: (n_timepoints,)
-        ax2.plot(months, centroid, label=f'Cluster {k}', 
-                linewidth=2.5, marker='o', color=colors[k])
+        for k in range(cfg.n_clusters):
+            centroid = clusterer.cluster_centers_[k, 0, :]  # Shape: (n_timepoints,)
+            ax2.plot(months, centroid, label=f'Cluster {k}', 
+                    linewidth=2.5, marker='o', color=colors[k])
     
-    ax2.set_xlabel('Month')
-    ax2.set_ylabel('Generation (thousand MWh)')
-    ax2.set_title('Cluster Centroids (Seasonal Patterns)')
-    ax2.set_xticks(months)
-    ax2.set_xticklabels(month_names, rotation=45, ha='right')
-    ax2.legend()
+        ax2.set_xlabel('Month')
+        ax2.set_ylabel('Generation (thousand MWh)')
+        ax2.set_title('Cluster Centroids (Seasonal Patterns)')
+        ax2.set_xticks(months)
+        ax2.set_xticklabels(month_names, rotation=45, ha='right')
+        ax2.legend()
     
     # 3. All sequences colored by cluster
-    ax3 = plt.subplot(2, 3, 3)
-    for i in range(len(X)):
-        ax3.plot(months, X[i, 0, :], color=colors[labels[i]], 
-                alpha=0.3, linewidth=1)
+        ax3 = plt.subplot(2, 3, 3)
+        for i in range(len(X)):
+            ax3.plot(months, X[i, 0, :], color=colors[labels[i]], 
+                    alpha=0.3, linewidth=1)
     
-    ax3.set_xlabel('Month')
-    ax3.set_ylabel('Generation (thousand MWh)')
-    ax3.set_title('All Annual Patterns by Cluster')
-    ax3.set_xticks(months)
-    ax3.set_xticklabels(month_names, rotation=45, ha='right')
+        ax3.set_xlabel('Month')
+        ax3.set_ylabel('Generation (thousand MWh)')
+        ax3.set_title('All Annual Patterns by Cluster')
+        ax3.set_xticks(months)
+        ax3.set_xticklabels(month_names, rotation=45, ha='right')
     
     # 4. DTW distance heatmap
-    ax4 = plt.subplot(2, 3, 4)
-    im = ax4.imshow(dtw_matrix, cmap='YlOrRd', aspect='auto')
-    ax4.set_xlabel('Year Index')
-    ax4.set_ylabel('Year Index')
-    ax4.set_title('DTW Distance Matrix')
-    plt.colorbar(im, ax=ax4, label='DTW Distance')
+        ax4 = plt.subplot(2, 3, 4)
+        im = ax4.imshow(dtw_matrix, cmap='YlOrRd', aspect='auto')
+        ax4.set_xlabel('Year Index')
+        ax4.set_ylabel('Year Index')
+        ax4.set_title('DTW Distance Matrix')
+        plt.colorbar(im, ax=ax4, label='DTW Distance')
     
     # 5. Sample sequences from each cluster
-    ax5 = plt.subplot(2, 3, 5)
-    for k in range(cfg.n_clusters):
-        cluster_indices = np.where(labels == k)[0]
-        if len(cluster_indices) > 0:
-            sample_idx = cluster_indices[0]
-            ax5.plot(months, X[sample_idx, 0, :], 
-                    label=f'Cluster {k} ({years[sample_idx]})', 
-                    linewidth=2, marker='o', color=colors[k])
+        ax5 = plt.subplot(2, 3, 5)
+        for k in range(cfg.n_clusters):
+            cluster_indices = np.where(labels == k)[0]
+            if len(cluster_indices) > 0:
+                sample_idx = cluster_indices[0]
+                ax5.plot(months, X[sample_idx, 0, :], 
+                        label=f'Cluster {k} ({years[sample_idx]})', 
+                        linewidth=2, marker='o', color=colors[k])
     
-    ax5.set_xlabel('Month')
-    ax5.set_ylabel('Generation (thousand MWh)')
-    ax5.set_title('Representative Year from Each Cluster')
-    ax5.set_xticks(months)
-    ax5.set_xticklabels(month_names, rotation=45, ha='right')
-    ax5.legend()
+        ax5.set_xlabel('Month')
+        ax5.set_ylabel('Generation (thousand MWh)')
+        ax5.set_title('Representative Year from Each Cluster')
+        ax5.set_xticks(months)
+        ax5.set_xticklabels(month_names, rotation=45, ha='right')
+        ax5.legend()
     
     # 6. Inertia and silhouette score
-    ax6 = plt.subplot(2, 3, 6)
-    from sklearn.metrics import silhouette_score
+        ax6 = plt.subplot(2, 3, 6)
+        from sklearn.metrics import silhouette_score
     
     # Flatten for silhouette score
-    X_flat = X.reshape(X.shape[0], -1)
-    sil_score = silhouette_score(X_flat, labels, metric='euclidean')
+        X_flat = X.reshape(X.shape[0], -1)
+        sil_score = silhouette_score(X_flat, labels, metric='euclidean')
     
-    metrics_text = (
-        f"Clustering Metrics:\n\n"
-        f"Distance: {cfg.distance.upper()}\n"
-        f"Clusters: {cfg.n_clusters}\n"
-        f"Inertia: {clusterer.inertia_:.1f}\n"
-        f"Silhouette: {sil_score:.3f}\n"
-        f"Iterations: {clusterer.n_iter_}\n\n"
-        f"Interpretation:\n"
-        f"- DTW captures shape similarity\n"
-        f"- Clusters reveal distinct\n"
-        f"  seasonal patterns\n"
-        f"- Higher silhouette = better\n"
-        f"  separation"
-    )
+        metrics_text = (
+            f"Clustering Metrics:\n\n"
+            f"Distance: {cfg.distance.upper()}\n"
+            f"Clusters: {cfg.n_clusters}\n"
+            f"Inertia: {clusterer.inertia_:.1f}\n"
+            f"Silhouette: {sil_score:.3f}\n"
+            f"Iterations: {clusterer.n_iter_}\n\n"
+            f"Interpretation:\n"
+            f"- DTW captures shape similarity\n"
+            f"- Clusters reveal distinct\n"
+            f"  seasonal patterns\n"
+            f"- Higher silhouette = better\n"
+            f"  separation"
+        )
     
-    ax6.text(0.1, 0.5, metrics_text, transform=ax6.transAxes,
-            fontsize=11, verticalalignment='center',
-            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
-    ax6.axis('off')
+        ax6.text(0.1, 0.5, metrics_text, transform=ax6.transAxes,
+                fontsize=11, verticalalignment='center',
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
+        ax6.axis('off')
     
-    save_fig('eia_aeon_ts_clusters.png')
+        save_fig('eia_aeon_ts_clusters.png')
     
     logger.info(f"\nClustering Quality:")
     logger.info(f"  Inertia:         {clusterer.inertia_:.1f}")
