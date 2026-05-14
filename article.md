@@ -2,7 +2,7 @@
 regression, clustering, forecasting, and transformation. It seems to be...
 
 ### Aeon for Time Series Clustering with Python
-**Aeon** is an open-source time series library for TS classification, regression, clustering, forecasting, and transformation. It seems to be well maintained and there are articles about it from 2024.
+Aeon is an open-source time series library for TS classification, regression, clustering, forecasting, and transformation. It seems to be well maintained and there are articles about it from 2024.
 
 > Warning --- I could only get Aeon to work with Pandas==1.4.0 (an older
 > version). Newer versions of Pandas use a different index API which
