@@ -7,6 +7,7 @@ from aeon.distances import dtw_distance
 from data_io import read_csv
 from dataclasses import dataclass
 from pathlib import Path
+import signalplot
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,11 +35,8 @@ Using specialized time series clustering algorithms from the AEON library
 # AEON imports for time series clustering
 
 np.random.seed(42)
-plt.rcParams.update({
-    'axes.grid': False,'font.family': 'serif','axes.spines.top': False,'axes.spines.right': False,'axes.linewidth': 0.8})
+signalplot.apply(font_family='serif')
 
-def save_fig(path: str):
-    plt.tight_layout(); plt.savefig(path, bbox_inches='tight'); plt.close()
 
 @dataclass
 class Config:
@@ -238,7 +236,7 @@ def main(plot: bool = False):
                 bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
         ax6.axis('off')
     
-        save_fig('eia_aeon_ts_clusters.png')
+        signalplot.save('eia_aeon_ts_clusters.png')
     
     logger.info(f"\nClustering Quality:")
     logger.info(f"  Inertia:         {clusterer.inertia_:.1f}")

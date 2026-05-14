@@ -3,6 +3,7 @@ Time Series Clustering with AEON
 Using specialized time series clustering algorithms from the AEON library
 """
 
+import signalplot
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -20,20 +21,9 @@ from aeon.clustering import TimeSeriesKMeans
 from aeon.distances import dtw_distance
 
 np.random.seed(42)
-plt.rcParams.update(
-    {
-        "font.family": "serif",
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.linewidth": 0.8,
-    }
-)
+signalplot.apply(font_family='serif')
 
 
-def save_fig(path: str):
-    plt.tight_layout()
-    plt.savefig(path, bbox_inches="tight")
-    plt.close()
 
 
 @dataclass
@@ -270,7 +260,7 @@ def main(plot: bool = False):
         )
         ax6.axis("off")
 
-        save_fig("eia_aeon_ts_clusters.png")
+        signalplot.save("eia_aeon_ts_clusters.png")
 
     logger.info(f"\nClustering Quality:")
     logger.info(f"  Inertia:         {clusterer.inertia_:.1f}")
