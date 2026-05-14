@@ -113,8 +113,7 @@ def main(plot: bool = False):
         return
 
     logger.info(f"\nTime Series Clustering with AEON")
-    logger.info(f"{'='*60}")
-    logger.info(f"Total observations: {len(s)}")
+    logger.info("=== Total observations: {len(s)} ===")
     logger.info(f"Date range: {s.index.min().date()} to {s.index.max().date()}")
 
     # Prepare annual sequences
