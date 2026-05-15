@@ -34,7 +34,6 @@ Using specialized time series clustering algorithms from the AEON library
 
 # AEON imports for time series clustering
 
-np.random.seed(42)
 signalplot.apply(font_family='serif')
 
 
@@ -98,6 +97,7 @@ def compute_dtw_matrix(sequences: np.ndarray) -> np.ndarray:
     return dist_matrix
 
 def main(plot: bool = False):
+    np.random.seed(42)
     cfg = Config()
     
     try:
