@@ -3,17 +3,17 @@ Time Series Clustering with AEON
 Using specialized time series clustering algorithms from the AEON library
 """
 
-import signalplot
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from pathlib import Path
-from dataclasses import dataclass
+import signalplot
 
-import logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 # AEON imports for time series clustering
@@ -21,9 +21,7 @@ from aeon.clustering import TimeSeriesKMeans
 from aeon.distances import dtw_distance
 
 np.random.seed(42)
-signalplot.apply(font_family='serif')
-
-
+signalplot.apply(font_family="serif")
 
 
 @dataclass
@@ -128,7 +126,9 @@ def main(plot: bool = False):
     logger.info(f"\nCluster Distribution:")
     for label, count in zip(unique_labels, counts):
         cluster_years = [years[i] for i in range(len(years)) if labels[i] == label]
-        logger.info(f"  Cluster {label}: {count} years ({count/len(years)*100:.1f}%)")
+        logger.info(
+            f"  Cluster {label}: {count} years ({count / len(years) * 100:.1f}%)"
+        )
         logger.info(f"    Years: {cluster_years}")
 
     # Compute DTW distance matrix for visualization
@@ -139,7 +139,7 @@ def main(plot: bool = False):
     if plot:
         fig = plt.figure(figsize=(16, 10))
 
-    # 1. Cluster assignments over time
+        # 1. Cluster assignments over time
         ax1 = plt.subplot(2, 3, 1)
         colors = ["#1f77b4", "#ff7f0e", "#2ca02c"]
         for i, year in enumerate(years):
@@ -149,7 +149,7 @@ def main(plot: bool = False):
         ax1.set_title("Cluster Assignments Over Time")
         ax1.set_yticks(range(cfg.n_clusters))
 
-    # 2. Cluster centroids (seasonal patterns)
+        # 2. Cluster centroids (seasonal patterns)
         ax2 = plt.subplot(2, 3, 2)
         months = range(1, 13)
         month_names = [
@@ -185,10 +185,12 @@ def main(plot: bool = False):
         ax2.set_xticklabels(month_names, rotation=45, ha="right")
         ax2.legend()
 
-    # 3. All sequences colored by cluster
+        # 3. All sequences colored by cluster
         ax3 = plt.subplot(2, 3, 3)
         for i in range(len(X)):
-            ax3.plot(months, X[i, 0, :], color=colors[labels[i]], alpha=0.3, linewidth=1)
+            ax3.plot(
+                months, X[i, 0, :], color=colors[labels[i]], alpha=0.3, linewidth=1
+            )
 
         ax3.set_xlabel("Month")
         ax3.set_ylabel("Generation (thousand MWh)")
@@ -196,7 +198,7 @@ def main(plot: bool = False):
         ax3.set_xticks(months)
         ax3.set_xticklabels(month_names, rotation=45, ha="right")
 
-    # 4. DTW distance heatmap
+        # 4. DTW distance heatmap
         ax4 = plt.subplot(2, 3, 4)
         im = ax4.imshow(dtw_matrix, cmap="YlOrRd", aspect="auto")
         ax4.set_xlabel("Year Index")
@@ -204,7 +206,7 @@ def main(plot: bool = False):
         ax4.set_title("DTW Distance Matrix")
         plt.colorbar(im, ax=ax4, label="DTW Distance")
 
-    # 5. Sample sequences from each cluster
+        # 5. Sample sequences from each cluster
         ax5 = plt.subplot(2, 3, 5)
         for k in range(cfg.n_clusters):
             cluster_indices = np.where(labels == k)[0]
@@ -226,11 +228,11 @@ def main(plot: bool = False):
         ax5.set_xticklabels(month_names, rotation=45, ha="right")
         ax5.legend()
 
-    # 6. Inertia and silhouette score
+        # 6. Inertia and silhouette score
         ax6 = plt.subplot(2, 3, 6)
         from sklearn.metrics import silhouette_score
 
-    # Flatten for silhouette score
+        # Flatten for silhouette score
         X_flat = X.reshape(X.shape[0], -1)
         sil_score = silhouette_score(X_flat, labels, metric="euclidean")
 

@@ -1,7 +1,0 @@
-aeon
-scikit-learn
-matplotlib
-pandas
-numpy
-pyyaml
-pytest
