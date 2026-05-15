@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from aeon.datasets import make_example_3_class_dataset
 from aeon.classification.distance_based import KNeighborsTimeSeriesClassifier

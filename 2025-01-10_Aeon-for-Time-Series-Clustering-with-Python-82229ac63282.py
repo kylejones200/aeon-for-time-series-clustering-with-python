@@ -106,7 +106,7 @@ def main(plot: bool = False):
         logger.info(f"NOTE: {cfg.csv_path} not found, cannot run AEON clustering")
         return
     
-    logger.info(f"\nTime Series Clustering with AEON")
+    logger.info("\nTime Series Clustering with AEON")
     logger.info("=== Total observations: {len(s)} ===")
     logger.info(f"Date range: {s.index.min().date()} to {s.index.max().date()}")
     
@@ -129,19 +129,19 @@ def main(plot: bool = False):
     
     # Cluster statistics
     unique_labels, counts = np.unique(labels, return_counts=True)
-    logger.info(f"\nCluster Distribution:")
+    logger.info("\nCluster Distribution:")
     for label, count in zip(unique_labels, counts):
         cluster_years = [years[i] for i in range(len(years)) if labels[i] == label]
         logger.info(f"  Cluster {label}: {count} years ({count/len(years)*100:.1f}%)")
         logger.info(f"    Years: {cluster_years}")
     
     # Compute DTW distance matrix for visualization
-    logger.info(f"\nComputing DTW distance matrix...")
+    logger.info("\nComputing DTW distance matrix...")
     dtw_matrix = compute_dtw_matrix(X)
     
     # Create visualizations
     if plot:
-        fig = plt.figure(figsize=(16, 10))
+        plt.figure(figsize=(16, 10))
     
     # 1. Cluster assignments over time
         ax1 = plt.subplot(2, 3, 1)
@@ -233,17 +233,17 @@ def main(plot: bool = False):
     
         ax6.text(0.1, 0.5, metrics_text, transform=ax6.transAxes,
                 fontsize=11, verticalalignment='center',
-                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3))
+                bbox={"boxstyle": 'round', "facecolor": 'wheat', "alpha": 0.3})
         ax6.axis('off')
     
         signalplot.save('eia_aeon_ts_clusters.png')
     
-    logger.info(f"\nClustering Quality:")
+    logger.info("\nClustering Quality:")
     logger.info(f"  Inertia:         {clusterer.inertia_:.1f}")
     logger.info(f"  Silhouette:      {sil_score:.3f}")
     logger.info(f"  Iterations:      {clusterer.n_iter_}")
     
-    logger.info(f"\nOutput: eia_aeon_ts_clusters.png\n")
+    logger.info("\nOutput: eia_aeon_ts_clusters.png\n")
 
 if __name__ == '__main__':
     main()

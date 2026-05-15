@@ -2,7 +2,7 @@
 
 import numpy as np
 from pathlib import Path
-from typing import Tuple, Dict, Any
+from typing import Any
 from aeon.datasets import make_example_3_class_dataset
 from aeon.classification.distance_based import KNeighborsTimeSeriesClassifier
 from sklearn.model_selection import train_test_split
@@ -14,14 +14,14 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 def generate_dataset(n_instances: int = 50, n_timepoints: int = 30, 
-                    random_state: int = 42) -> Tuple[np.ndarray, np.ndarray]:
+                    random_state: int = 42) -> tuple[np.ndarray, np.ndarray]:
     """Generate synthetic time series dataset."""
     return make_example_3_class_dataset(n_instances=n_instances, 
                                        n_timepoints=n_timepoints, 
                                        random_state=random_state)
 
 def split_data(X: np.ndarray, y: np.ndarray, test_size: float = 0.2, 
-              random_state: int = 42) -> Tuple:
+              random_state: int = 42) -> tuple:
     """Split data into training and testing sets (no shuffle for time series)."""
     return train_test_split(X, y, test_size=test_size, random_state=random_state, shuffle=False)
 
@@ -33,7 +33,7 @@ def fit_classifier(X_train: np.ndarray, y_train: np.ndarray,
     return clf
 
 def evaluate_classifier(clf: KNeighborsTimeSeriesClassifier, X_test: np.ndarray, 
-                       y_test: np.ndarray) -> Dict[str, Any]:
+                       y_test: np.ndarray) -> dict[str, Any]:
     """Evaluate classifier and return metrics."""
     y_pred = clf.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
