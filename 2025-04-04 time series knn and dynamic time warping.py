@@ -1,219 +1,171 @@
-"""Generated from Jupyter notebook: 2025-04-04 time series knn and dynamic time warping
+"""Time series k-NN and dynamic time warping with tslearn.
 
-Magics and shell lines are commented out. Run with a normal Python interpreter."""
-
-
-# --- code cell ---
-
-import numpy as np
-
-# Create a synthetic univariate time series dataset
-X = np.array([[1, 2, 3, 4, 5], [2, 3, 4, 5, 6], [3, 4, 5, 6, 7]])
-print(X.shape)  # (3 samples, 5 timesteps)
+Demonstrates preprocessing, clustering, classification, DTW distance,
+and SAX feature extraction on synthetic data.
 """
-Resampling Time Series
-Adjust time series to have a consistent length.
-"""
-from tslearn.preprocessing import TimeSeriesResampler
 
-# Resample to 10 timesteps
-resampler = TimeSeriesResampler(sz=10)
-X_resampled = resampler.fit_transform(X)
-print(X_resampled.shape)  # (3 samples, 10 timesteps)
-"""
-Normalizing Time Series
-Standardize time series to have zero mean and unit variance.
-"""
-from tslearn.preprocessing import TimeSeriesScalerMeanVariance
+from __future__ import annotations
 
-scaler = TimeSeriesScalerMeanVariance()
-X_scaled = scaler.fit_transform(X)
-print(X_scaled)
-"""
-Clustering Time Series
-Now to the fun stuff. tslearn provides specialized algorithms for clustering, such as K-Shape and DTW-based K-Means.
-K-Shape Clustering
-K-Shape clusters time series based on shape similarity.
-"""
+import argparse
+import logging
+
 import matplotlib.pyplot as plt
-from tslearn.clustering import KShape
-
-# Synthetic time series dataset
-X = np.random.rand(100, 50, 1)  # 100 samples, 50 timesteps
-
-# Apply K-Shape clustering
-kshape = KShape(n_clusters=3, random_state=0)
-y_pred = kshape.fit_predict(X)
-
-# Plot cluster centroids
-for centroid in kshape.cluster_centers_:
-    plt.plot(centroid.ravel())
-plt.title("K-Shape Cluster Centroids")
-plt.show()
-"""
-DTW K-Means
-Use Dynamic Time Warping (DTW) for clustering.
-"""
-from tslearn.clustering import TimeSeriesKMeans
-
-# Apply DTW-based K-Means
-dtw_kmeans = TimeSeriesKMeans(n_clusters=3, metric="dtw", random_state=0)
-y_pred = dtw_kmeans.fit_predict(X)
-
-# Plot cluster centroids
-for centroid in dtw_kmeans.cluster_centers_:
-    plt.plot(centroid.ravel())
-plt.title("DTW K-Means Cluster Centroids")
-plt.show()
-"""
-Time Series Classification
-tslearn supports time series classification using k-Nearest Neighbors (kNN) and other methods.
-kNN Classification with DTW
-"""
+import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from tslearn.neighbors import KNeighborsTimeSeriesClassifier
-
-# Create synthetic dataset
-X = np.random.rand(200, 50, 1)  # 200 samples, 50 timesteps
-y = np.random.randint(0, 2, 200)  # Binary labels
-
-# Split into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
-
-# Train a k-NN classifier with DTW
-knn = KNeighborsTimeSeriesClassifier(n_neighbors=3, metric="dtw")
-knn.fit(X_train, y_train)
-
-# Make predictions
-y_pred = knn.predict(X_test)
-print(f"Accuracy: {accuracy_score(y_test, y_pred):.2f}")
-"""
-Dynamic Time Warping (DTW)
-DTW measures the similarity between two time series by aligning them.
-So we can compute the distance between two series using DTW Distance
-"""
+from tslearn.clustering import KShape, TimeSeriesKMeans
 from tslearn.metrics import dtw
-
-# Two synthetic time series
-ts1 = np.array([1, 2, 3, 4, 5])
-ts2 = np.array([2, 3, 4, 5, 6])
-
-# Compute DTW distance
-distance = dtw(ts1, ts2)
-print(f"DTW Distance: {distance:.2f}")
-"""
-Feature Extraction
-Example: Symbolic Aggregate Approximation (SAX)
-Convert time series into symbolic representations.
-"""
+from tslearn.neighbors import KNeighborsTimeSeriesClassifier
 from tslearn.piecewise import SymbolicAggregateApproximation
+from tslearn.preprocessing import TimeSeriesResampler, TimeSeriesScalerMeanVariance
 
-# Apply SAX
-sax = SymbolicAggregateApproximation(n_segments=5, alphabet_size_avg=3)
-X_sax = sax.fit_transform(X)
-print(X_sax)
+logger = logging.getLogger(__name__)
 
 
-# --- code cell ---
+def demo_preprocessing() -> None:
+    """Resample and normalize a small univariate dataset."""
+    x = np.array([[1, 2, 3, 4, 5], [2, 3, 4, 5, 6], [3, 4, 5, 6, 7]])
+    logger.info("Original shape: %s", x.shape)
 
-# !pip install tslearn  # Jupyter-only
+    resampler = TimeSeriesResampler(sz=10)
+    x_resampled = resampler.fit_transform(x)
+    logger.info("Resampled shape: %s", x_resampled.shape)
+
+    scaler = TimeSeriesScalerMeanVariance()
+    x_scaled = scaler.fit_transform(x)
+    logger.info("Scaled series (first sample):\n%s", x_scaled[0].ravel())
 
 
-# --- code cell ---
+def plot_cluster_centroids(model, title: str) -> None:
+    for centroid in model.cluster_centers_:
+        plt.plot(centroid.ravel())
+    plt.title(title)
+    plt.xlabel("Time")
+    plt.ylabel("Value")
+    plt.tight_layout()
 
-import numpy as np
-from classification import train_knn_classifier
-from clustering import dtw_kmeans_clustering, kshape_clustering
-from dtw_analysis import compute_dtw_distance
-from feature_extraction import sax_transformation
-from preprocessing import normalize_time_series, resample_time_series
+
+def demo_clustering(
+    x: np.ndarray,
+    *,
+    n_clusters: int = 3,
+    random_state: int = 0,
+    show_plots: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Cluster time series with K-Shape and DTW K-Means."""
+    kshape = KShape(n_clusters=n_clusters, random_state=random_state)
+    kshape_labels = kshape.fit_predict(x)
+    logger.info("K-Shape cluster sizes: %s", np.bincount(kshape_labels))
+
+    if show_plots:
+        plot_cluster_centroids(kshape, "K-Shape Cluster Centroids")
+        plt.show()
+
+    dtw_kmeans = TimeSeriesKMeans(
+        n_clusters=n_clusters, metric="dtw", random_state=random_state
+    )
+    dtw_labels = dtw_kmeans.fit_predict(x)
+    logger.info("DTW K-Means cluster sizes: %s", np.bincount(dtw_labels))
+
+    if show_plots:
+        plot_cluster_centroids(dtw_kmeans, "DTW K-Means Cluster Centroids")
+        plt.show()
+
+    return kshape_labels, dtw_labels
 
 
-def main():
-    print("Running Time Series Analysis...\n")
+def demo_classification(
+    x: np.ndarray,
+    y: np.ndarray,
+    *,
+    n_neighbors: int = 3,
+    test_size: float = 0.2,
+    random_state: int = 42,
+) -> float:
+    """Train a k-NN classifier with DTW and return test accuracy."""
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=test_size, random_state=random_state
+    )
 
-    # Synthetic data
-    X = np.random.rand(100, 50, 1)
-    y = np.random.randint(0, 2, 100)
+    knn = KNeighborsTimeSeriesClassifier(n_neighbors=n_neighbors, metric="dtw")
+    knn.fit(x_train, y_train)
+    y_pred = knn.predict(x_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    logger.info("K-NN (DTW) accuracy: %.2f", accuracy)
+    return accuracy
 
-    # Resampling & Normalization
-    X_resampled = resample_time_series(X, new_size=10)
-    X_scaled = normalize_time_series(X)
 
-    # Clustering
-    kshape_model, _ = kshape_clustering(X)
-    dtw_kmeans_model, _ = dtw_kmeans_clustering(X)
-
-    # Classification
-    accuracy = train_knn_classifier(X, y)
-    print(f"K-NN Classifier Accuracy: {accuracy:.2f}")
-
-    # DTW Analysis
+def demo_dtw_distance() -> float:
+    """Compute DTW distance between two short series."""
     ts1 = np.array([1, 2, 3, 4, 5])
     ts2 = np.array([2, 3, 4, 5, 6])
-    distance = compute_dtw_distance(ts1, ts2)
-    print(f"DTW Distance: {distance:.2f}")
-
-    # Feature Extraction
-    X_sax = sax_transformation(X)
-    print("SAX Feature Extraction Complete.")
+    distance = dtw(ts1, ts2)
+    logger.info("DTW distance: %.2f", distance)
+    return distance
 
 
-if __name__ == "__main__":
-    main()
+def demo_sax(x: np.ndarray, *, n_segments: int = 5, alphabet_size: int = 3) -> np.ndarray:
+    """Convert time series to symbolic aggregate approximations."""
+    sax = SymbolicAggregateApproximation(
+        n_segments=n_segments, alphabet_size_avg=alphabet_size
+    )
+    x_sax = sax.fit_transform(x)
+    logger.info("SAX representation (first sample): %s", x_sax[0].ravel())
+    return x_sax
 
 
-# --- code cell ---
-
-import matplotlib.pyplot as plt
-import numpy as np
-from classification import train_knn_classifier
-from clustering import dtw_kmeans_clustering, kshape_clustering
-from dtw_analysis import compute_dtw_distance
-from feature_extraction import sax_transformation
-from preprocessing import normalize_time_series, resample_time_series
-from visualization import plot_clusters, plot_time_series
+def make_clustering_data(
+    n_samples: int = 100,
+    n_timesteps: int = 50,
+    *,
+    random_state: int = 0,
+) -> np.ndarray:
+    rng = np.random.default_rng(random_state)
+    return rng.random((n_samples, n_timesteps, 1))
 
 
-def main():
-    print("Running Time Series Analysis...\n")
+def make_classification_data(
+    n_samples: int = 200,
+    n_timesteps: int = 50,
+    *,
+    random_state: int = 42,
+) -> tuple[np.ndarray, np.ndarray]:
+    rng = np.random.default_rng(random_state)
+    x = rng.random((n_samples, n_timesteps, 1))
+    y = rng.integers(0, 2, n_samples)
+    return x, y
 
-    # Generate synthetic time series data
-    X = np.random.rand(100, 50, 1)
-    y = np.random.randint(0, 2, 100)
 
-    # Resampling & Normalization
-    X_resampled = resample_time_series(X, new_size=10)
-    X_scaled = normalize_time_series(X)
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Time series k-NN and DTW examples with tslearn"
+    )
+    parser.add_argument(
+        "--no-plots",
+        action="store_true",
+        help="Skip interactive cluster plots",
+    )
+    parser.add_argument("--seed", type=int, default=0, help="Random seed")
+    args = parser.parse_args()
 
-    # Plot sample time series
-    plot_time_series(X, title="Original Time Series Data")
-    plot_time_series(X_scaled, title="Normalized Time Series Data")
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    # Clustering
-    kshape_model, _ = kshape_clustering(X)
-    dtw_kmeans_model, _ = dtw_kmeans_clustering(X)
+    logger.info("=== Preprocessing ===")
+    demo_preprocessing()
 
-    # Plot clustering results
-    plot_clusters(kshape_model, "K-Shape Cluster Centroids")
-    plot_clusters(dtw_kmeans_model, "DTW K-Means Cluster Centroids")
+    logger.info("\n=== Clustering ===")
+    x_cluster = make_clustering_data(random_state=args.seed)
+    demo_clustering(x_cluster, random_state=args.seed, show_plots=not args.no_plots)
 
-    # Classification
-    accuracy = train_knn_classifier(X, y)
-    print(f"K-NN Classifier Accuracy: {accuracy:.2f}")
+    logger.info("\n=== Classification ===")
+    x_class, y_class = make_classification_data(random_state=args.seed + 1)
+    demo_classification(x_class, y_class, random_state=args.seed + 1)
 
-    # DTW Analysis
-    ts1 = np.array([1, 2, 3, 4, 5])
-    ts2 = np.array([2, 3, 4, 5, 6])
-    distance = compute_dtw_distance(ts1, ts2)
-    print(f"DTW Distance: {distance:.2f}")
+    logger.info("\n=== DTW distance ===")
+    demo_dtw_distance()
 
-    # Feature Extraction
-    X_sax = sax_transformation(X)
-    print("SAX Feature Extraction Complete.")
+    logger.info("\n=== SAX feature extraction ===")
+    demo_sax(x_class)
 
 
 if __name__ == "__main__":
