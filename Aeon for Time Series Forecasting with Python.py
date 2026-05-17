@@ -442,7 +442,6 @@ _ = plot_series_with_change_points(ed_seg, ed_seg_chp)
 
 import sys
 
-sys.path.insert(0, "..")
 
 import pandas as pd
 import seaborn as sns

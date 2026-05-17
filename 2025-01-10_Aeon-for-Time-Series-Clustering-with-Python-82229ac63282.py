@@ -81,8 +81,8 @@ def prepare_annual_sequences(s: pd.Series) -> tuple[np.ndarray, list]:
             .values
         )
         if len(year_data) == 12:
-            pd.concat([sequences, year_data])
-            pd.concat([years, year])
+            sequences.append(year_data)
+            years.append(year)
 
     # AEON expects shape (n_samples, n_channels, n_timepoints)
     X = np.array(sequences).reshape(len(sequences), 1, 12)
