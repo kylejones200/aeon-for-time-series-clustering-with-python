@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from aeon.clustering import TimeSeriesKMeans
 from aeon.distances import dtw_distance
 from data_io import read_csv
 
-
+logger = logging.getLogger(__name__)
 @dataclass
 class Config:
     csv_path: str = "2001-2025 Net_generation_United_States_all_sectors_monthly.csv"
@@ -63,9 +64,7 @@ def prepare_annual_sequences(s: pd.Series) -> tuple[np.ndarray, list]:
 
 def main() -> None:
     np.random.seed(42)
-
     cfg = Config()
-
     try:
         s = load_series(cfg)
     except FileNotFoundError:
@@ -73,38 +72,25 @@ def main() -> None:
         return
 
     logger.info("\nTime Series Clustering with AEON")
-
     logger.info("=== Total observations: {len(s)} ===")
-
     logger.info(f"Date range: {s.index.min().date()} to {s.index.max().date()}")
-
     X, years = prepare_annual_sequences(s)
-
     logger.info(f"Complete years: {len(years)}")
-
     logger.info(f"Shape for clustering: {X.shape} (samples, channels, timepoints)")
-
     logger.info(f"\nRunning TimeSeriesKMeans (distance={cfg.distance})...")
-
     clusterer = TimeSeriesKMeans(
         n_clusters=cfg.n_clusters, distance=cfg.distance, n_init=10, random_state=42, max_iter=50
     )
-
     labels = clusterer.fit_predict(X)
-
     unique_labels, counts = np.unique(labels, return_counts=True)
-
     logger.info("\nCluster Distribution:")
-
     for label, count in zip(unique_labels, counts):
         cluster_years = [years[i] for i in range(len(years)) if labels[i] == label]
         logger.info(f"  Cluster {label}: {count} years ({count / len(years) * 100:.1f}%)")
         logger.info(f"    Years: {cluster_years}")
 
     logger.info("\nComputing DTW distance matrix...")
-
     dtw_matrix = compute_dtw_matrix(X)
-
     if plot:
         plt.figure(figsize=(16, 10))
         ax1 = plt.subplot(2, 3, 1)
@@ -194,13 +180,9 @@ def main() -> None:
         signalplot.save("eia_aeon_ts_clusters.png")
 
     logger.info("\nClustering Quality:")
-
     logger.info(f"  Inertia:         {clusterer.inertia_:.1f}")
-
     logger.info(f"  Silhouette:      {sil_score:.3f}")
-
     logger.info(f"  Iterations:      {clusterer.n_iter_}")
-
     logger.info("\nOutput: eia_aeon_ts_clusters.png\n")
 
 

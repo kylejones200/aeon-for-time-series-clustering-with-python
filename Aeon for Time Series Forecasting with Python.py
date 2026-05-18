@@ -61,9 +61,7 @@ def make_sine_cosine_dataset(
     ]
     X = []
     for _ in range(n_samples):
-        series = patterns[rng.integers(0, len(patterns))]() + rng.normal(
-            0, 0.1, n_timepoints
-        )
+        series = patterns[rng.integers(0, len(patterns))]() + rng.normal(0, 0.1, n_timepoints)
         X.append(series)
     return np.array(X)
 
@@ -76,9 +74,7 @@ def prepare_longley_regression() -> tuple[np.ndarray, np.ndarray]:
     return X, y
 
 
-def plot_cluster_subplots(
-    X: np.ndarray, labels: np.ndarray, n_clusters: int = 3
-) -> None:
+def plot_cluster_subplots(X: np.ndarray, labels: np.ndarray, n_clusters: int = 3) -> None:
     """Plot each cluster's series in a stacked subplot."""
     fig, axes = plt.subplots(n_clusters, 1, figsize=(15, 10), sharex=True)
     if n_clusters == 1:
@@ -111,7 +107,6 @@ def demo_visualize_longley_matplotlib() -> None:
     _X, y = load_longley()
     y = y.copy()
     y.index = y.index.to_timestamp()
-
     plt.figure(figsize=(12, 6))
     for column in y.columns:
         plt.plot(y.index, y[column], label=column)
@@ -126,12 +121,8 @@ def demo_visualize_longley_matplotlib() -> None:
 
 def demo_classify_synthetic() -> None:
     """Time series forest classifier on a 3-class synthetic dataset."""
-    X, y = make_example_3_class_dataset(
-        n_instances=100, n_timepoints=50, random_state=42
-    )
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    X, y = make_example_3_class_dataset(n_instances=100, n_timepoints=50, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     clf = TimeSeriesForestClassifier()
     clf.fit(X_train, y_train)
     accuracy = clf.score(X_test, y_test)
@@ -141,9 +132,7 @@ def demo_classify_synthetic() -> None:
 def demo_regression_longley() -> None:
     """Time series forest regressor on reshaped Longley data."""
     X, y = prepare_longley_regression()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     reg = TimeSeriesForestRegressor(random_state=42)
     reg.fit(X_train, y_train)
     y_pred = reg.predict(X_test)
@@ -154,7 +143,6 @@ def demo_regression_longley() -> None:
 def demo_regression_longley_plots() -> None:
     """Regression on Longley with diagnostic plots."""
     X, y = prepare_longley_regression()
-
     plt.figure(figsize=(12, 6))
     for i in range(X.shape[0]):
         plt.plot(X[i, :, 0], label=f"Series {i + 1}" if i < 5 else "")
@@ -163,15 +151,11 @@ def demo_regression_longley_plots() -> None:
     plt.ylabel("Value")
     plt.legend()
     plt.show()
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     reg = TimeSeriesForestRegressor(random_state=42)
     reg.fit(X_train, y_train)
     y_pred = reg.predict(X_test)
     logger.info("R-squared score: %.2f", r2_score(y_test, y_pred))
-
     plt.figure(figsize=(10, 6))
     plt.scatter(y_test, y_pred, color="blue", alpha=0.5)
     lo, hi = y_test.min(), y_test.max()
@@ -180,7 +164,6 @@ def demo_regression_longley_plots() -> None:
     plt.ylabel("Predicted Values")
     plt.title("Predicted vs Actual Values")
     plt.show()
-
     residuals = y_test - y_pred
     plt.figure(figsize=(10, 6))
     if HAS_SEABORN:
@@ -191,7 +174,6 @@ def demo_regression_longley_plots() -> None:
     plt.ylabel("Frequency")
     plt.title("Distribution of Residuals")
     plt.show()
-
     plt.figure(figsize=(10, 6))
     plt.scatter(y_pred, residuals, color="green", alpha=0.5)
     plt.axhline(y=0, color="r", linestyle="--")
@@ -215,9 +197,7 @@ def demo_cluster_synthetic() -> tuple[np.ndarray, np.ndarray]:
 
 def demo_classify_cluster_labels(X: np.ndarray, labels: np.ndarray) -> None:
     """Train a classifier using cluster IDs as pseudo-labels."""
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, labels, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.2, random_state=42)
     clf = TimeSeriesForestClassifier(random_state=42)
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
@@ -232,9 +212,7 @@ def demo_cluster_noisy_random_walk() -> tuple[np.ndarray, np.ndarray]:
     """K-means on random-walk series; returns X and labels."""
     rng = np.random.default_rng(42)
     n_series, n_timepoints = 30, 100
-    X = np.array(
-        [np.cumsum(rng.standard_normal(n_timepoints)) for _ in range(n_series)]
-    )
+    X = np.array([np.cumsum(rng.standard_normal(n_timepoints)) for _ in range(n_series)])
     kmeans = TimeSeriesKMeans(n_clusters=3, random_state=42)
     labels = kmeans.fit_predict(X)
     plot_cluster_subplots(X, labels)
@@ -281,11 +259,9 @@ def demo_segmentation_clasp(csv_path: Path) -> None:
     found_cps = clasp.fit_predict(df["hd"].values)
     profiles = clasp.profiles
     logger.info("Found change points: %s", found_cps)
-
     dominant_period_size = find_dominant_window_sizes(df["hd"])
     logger.info("Dominant period size: %s", dominant_period_size)
     logger.info("Series length: %d", len(df))
-
     plot_series_with_profiles(
         df["hd"].values,
         profiles,
@@ -298,9 +274,7 @@ def demo_segmentation_clasp(csv_path: Path) -> None:
 def demo_forecast_ets_simple() -> None:
     """One-step ETS forecast on airline data."""
     y = load_airline()
-    forecaster = ETSForecaster(
-        alpha=0.4, beta=0.2, gamma=0.5, phi=0.8, horizon=1
-    )
+    forecaster = ETSForecaster(alpha=0.4, beta=0.2, gamma=0.5, phi=0.8, horizon=1)
     forecaster.fit(y)
     prediction = forecaster.predict()
     logger.info("One-step forecast: %s", prediction)
@@ -311,13 +285,10 @@ def demo_forecast_ets_holdout() -> None:
     y = load_airline()
     train = y[:-12]
     test = y[-12:]
-
     forecaster = ETSForecaster(seasonal="add", sp=12)
     forecaster.fit(train)
-
     fh = np.arange(1, 13)
     y_pred = forecaster.predict(fh)
-
     plt.figure(figsize=(12, 6))
     train.plot(label="Training Data", color="blue")
     test.plot(label="Test Data", color="green")
@@ -328,7 +299,6 @@ def demo_forecast_ets_holdout() -> None:
     plt.legend()
     plt.grid(False)
     plt.show()
-
     logger.info("Forecast values:\n%s", y_pred)
     mae = mean_absolute_error(test, y_pred)
     logger.info("Mean Absolute Error: %.2f", mae)
@@ -380,9 +350,7 @@ def run_all(csv_path: Path) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Aeon time series forecasting and analysis demos"
-    )
+    parser = argparse.ArgumentParser(description="Aeon time series forecasting and analysis demos")
     parser.add_argument(
         "--demo",
         choices=[*DEMOS.keys(), "cluster", "noisy-cluster", "clasp", "all"],
@@ -410,7 +378,6 @@ def main() -> None:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(message)s",
     )
-
     if args.demo == "all":
         run_all(args.csv)
     elif args.demo == "cluster":

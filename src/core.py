@@ -1,6 +1,5 @@
 """Core functions for time series clustering with aeon."""
 
-import logging
 from pathlib import Path
 from typing import Any
 
@@ -8,11 +7,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from aeon.classification.distance_based import KNeighborsTimeSeriesClassifier
 from aeon.datasets import make_example_3_class_dataset
+from aeon.visualisation import plot_series
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def generate_dataset(
@@ -28,9 +25,7 @@ def split_data(
     X: np.ndarray, y: np.ndarray, test_size: float = 0.2, random_state: int = 42
 ) -> tuple:
     """Split data into training and testing sets (no shuffle for time series)."""
-    return train_test_split(
-        X, y, test_size=test_size, random_state=random_state, shuffle=False
-    )
+    return train_test_split(X, y, test_size=test_size, random_state=random_state, shuffle=False)
 
 
 def fit_classifier(
@@ -51,7 +46,7 @@ def evaluate_classifier(
     return {"accuracy": accuracy, "predictions": y_pred}
 
 
-def plot_sample_series(X: np.ndarray, labels: list, output_path: Path):
+def plot_sample_series(X: np.ndarray, labels: list, output_path: Path, plot: bool = False):
     """Plot sample series from each class"""
     plot_series(X[0], X[1], X[2], labels=labels)
     plt.title("Sample Series from Each Class", pad=10)

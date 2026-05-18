@@ -26,11 +26,9 @@ def demo_preprocessing() -> None:
     """Resample and normalize a small univariate dataset."""
     x = np.array([[1, 2, 3, 4, 5], [2, 3, 4, 5, 6], [3, 4, 5, 6, 7]])
     logger.info("Original shape: %s", x.shape)
-
     resampler = TimeSeriesResampler(sz=10)
     x_resampled = resampler.fit_transform(x)
     logger.info("Resampled shape: %s", x_resampled.shape)
-
     scaler = TimeSeriesScalerMeanVariance()
     x_scaled = scaler.fit_transform(x)
     logger.info("Scaled series (first sample):\n%s", x_scaled[0].ravel())
@@ -56,17 +54,13 @@ def demo_clustering(
     kshape = KShape(n_clusters=n_clusters, random_state=random_state)
     kshape_labels = kshape.fit_predict(x)
     logger.info("K-Shape cluster sizes: %s", np.bincount(kshape_labels))
-
     if show_plots:
         plot_cluster_centroids(kshape, "K-Shape Cluster Centroids")
         plt.show()
 
-    dtw_kmeans = TimeSeriesKMeans(
-        n_clusters=n_clusters, metric="dtw", random_state=random_state
-    )
+    dtw_kmeans = TimeSeriesKMeans(n_clusters=n_clusters, metric="dtw", random_state=random_state)
     dtw_labels = dtw_kmeans.fit_predict(x)
     logger.info("DTW K-Means cluster sizes: %s", np.bincount(dtw_labels))
-
     if show_plots:
         plot_cluster_centroids(dtw_kmeans, "DTW K-Means Cluster Centroids")
         plt.show()
@@ -86,7 +80,6 @@ def demo_classification(
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=test_size, random_state=random_state
     )
-
     knn = KNeighborsTimeSeriesClassifier(n_neighbors=n_neighbors, metric="dtw")
     knn.fit(x_train, y_train)
     y_pred = knn.predict(x_test)
@@ -106,9 +99,7 @@ def demo_dtw_distance() -> float:
 
 def demo_sax(x: np.ndarray, *, n_segments: int = 5, alphabet_size: int = 3) -> np.ndarray:
     """Convert time series to symbolic aggregate approximations."""
-    sax = SymbolicAggregateApproximation(
-        n_segments=n_segments, alphabet_size_avg=alphabet_size
-    )
+    sax = SymbolicAggregateApproximation(n_segments=n_segments, alphabet_size_avg=alphabet_size)
     x_sax = sax.fit_transform(x)
     logger.info("SAX representation (first sample): %s", x_sax[0].ravel())
     return x_sax
@@ -137,9 +128,7 @@ def make_classification_data(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Time series k-NN and DTW examples with tslearn"
-    )
+    parser = argparse.ArgumentParser(description="Time series k-NN and DTW examples with tslearn")
     parser.add_argument(
         "--no-plots",
         action="store_true",
@@ -147,23 +136,17 @@ def main() -> None:
     )
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     args = parser.parse_args()
-
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-
     logger.info("=== Preprocessing ===")
     demo_preprocessing()
-
     logger.info("\n=== Clustering ===")
     x_cluster = make_clustering_data(random_state=args.seed)
     demo_clustering(x_cluster, random_state=args.seed, show_plots=not args.no_plots)
-
     logger.info("\n=== Classification ===")
     x_class, y_class = make_classification_data(random_state=args.seed + 1)
     demo_classification(x_class, y_class, random_state=args.seed + 1)
-
     logger.info("\n=== DTW distance ===")
     demo_dtw_distance()
-
     logger.info("\n=== SAX feature extraction ===")
     demo_sax(x_class)
 
