@@ -7,7 +7,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import signalplot
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -33,6 +32,8 @@ def ensure_output_dir(config: dict, key: str = "figures_dir") -> Path:
 
 
 def save_plot(path: str | Path, *, close: bool = True) -> None:
+    import signalplot
+
     signalplot.save(str(path))
     if close:
         plt.close()
@@ -56,6 +57,8 @@ def create_forecast_plot(
     title: str = "Forecast",
     output_path: Path | None = None,
 ) -> None:
+    import signalplot
+
     fig, ax = plt.subplots(figsize=(12, 4))
     ax.plot(actual, label="Actual", color="#2b2b2b")
     ax.plot(forecast, label="Forecast", color=signalplot.ACCENT, linestyle="--")

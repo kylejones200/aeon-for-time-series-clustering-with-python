@@ -1,0 +1,9 @@
+[package]
+name = "aeon_for_time_series_clustering_with_python_core"
+description = "Dynamic time warping distance"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
